@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7ff">
+  <title>Alphabet Adventure</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Trebuchet MS", "Arial Rounded MT Bold", Arial, sans-serif;
+      color: #25264b;
+      background: #f5f7ff;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      padding: 32px 20px;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(ellipse at 10% 12%, #e1e9ff 0, transparent 34%),
+        radial-gradient(ellipse at 90% 88%, #ffe9dc 0, transparent 31%),
+        #f5f7ff;
+    }
+
+    .app {
+      width: min(100%, 760px);
+      padding: clamp(24px, 6vw, 48px);
+      border: 1px solid #e8eaf5;
+      border-radius: 30px;
+      background: rgb(255 255 255 / 92%);
+      box-shadow: 0 24px 70px rgb(52 61 113 / 12%);
+      text-align: center;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #74789d;
+      font-size: .78rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 7vw, 3.2rem);
+      letter-spacing: -.045em;
+    }
+
+    .intro {
+      margin: 12px 0 26px;
+      color: #74789d;
+      font-size: 1rem;
+    }
+
+    .card {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(100px, .8fr) minmax(0, 1.2fr);
+      align-items: center;
+      min-height: 270px;
+      padding: 24px;
+      overflow: hidden;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #f0f3ff, #fff4ed);
+      text-align: left;
+    }
+
+    .letter {
+      color: #625ee8;
+      font-size: clamp(7rem, 24vw, 12rem);
+      font-weight: 900;
+      line-height: .9;
+      text-align: center;
+      text-shadow: 0 8px 0 rgb(98 94 232 / 10%);
+    }
+
+    .picture-wrap {
+      display: grid;
+      min-height: 205px;
+      place-items: center;
+    }
+
+    .picture {
+      width: min(100%, 220px);
+      height: 205px;
+      object-fit: contain;
+      border-radius: 18px;
+    }
+
+    .emoji {
+      font-size: clamp(6rem, 20vw, 9rem);
+      line-height: 1;
+      filter: drop-shadow(0 10px 10px rgb(38 42 79 / 12%));
+    }
+
+    .word {
+      margin: 20px 0 4px;
+      font-size: clamp(2rem, 7vw, 3rem);
+      font-weight: 900;
+      letter-spacing: -.035em;
+    }
+
+    .spelling {
+      margin: 0;
+      color: #74789d;
+      font-size: 1rem;
+    }
+
+    .hint {
+      margin: 24px 0 12px;
+      color: #74789d;
+      font-size: .9rem;
+    }
+
+    .fullscreen-status { margin: 8px 0 0; color: #a33b45; font-size: .82rem; }
+    .fullscreen-status:empty { display: none; }
+
+    .key {
+      display: inline-grid;
+      width: 34px;
+      height: 34px;
+      margin: 0 3px;
+      place-items: center;
+      border: 1px solid #dedff1;
+      border-bottom-width: 3px;
+      border-radius: 8px;
+      background: white;
+      color: #625ee8;
+      font-weight: 800;
+    }
+
+    .alphabet {
+      display: grid;
+      grid-template-columns: repeat(13, minmax(0, 1fr));
+      gap: 7px;
+      margin: 20px 0 26px;
+    }
+
+    .letter-button {
+      min-width: 0;
+      aspect-ratio: 1;
+      border: 1px solid #e7e8f3;
+      border-radius: 10px;
+      background: white;
+      color: #555979;
+      font: inherit;
+      font-size: .95rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .15s, background .15s, color .15s;
+    }
+
+    .letter-button:hover { transform: translateY(-2px); }
+
+    .letter-button[aria-pressed="true"] {
+      border-color: #625ee8;
+      background: #625ee8;
+      color: white;
+      box-shadow: 0 4px 10px rgb(98 94 232 / 24%);
+    }
+
+    .folder-picker {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      padding: 0 18px;
+      border: 1px solid #dedff1;
+      border-radius: 12px;
+      background: white;
+      color: #4f5276;
+      font-size: .9rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+
+    .folder-picker:hover {
+      border-color: #625ee8;
+      background: #fafaff;
+    }
+
+    .folder-picker:focus-within,
+    .letter-button:focus-visible {
+      outline: 3px solid rgb(98 94 232 / 30%);
+      outline-offset: 3px;
+    }
+
+    .folder-picker input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    .folder-note, .folder-status {
+      margin: 10px 0 0;
+      color: #8588a4;
+      font-size: .78rem;
+    }
+
+    .folder-status:empty { display: none; }
+
+    @media (max-width: 520px) {
+      body { padding: 16px 12px; }
+      .app { padding: 24px 16px; border-radius: 22px; }
+      .card { min-height: 220px; padding: 14px; }
+      .picture-wrap { min-height: 170px; }
+      .picture { height: 165px; }
+      .alphabet { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <p class="eyebrow">Learn your ABCs</p>
+    <h1>Alphabet Adventure</h1>
+    <p class="intro">Press a letter on your keyboard and let’s explore!</p>
+    <p class="fullscreen-status" id="fullscreen-status" role="status"></p>
+
+    <section class="card" aria-live="polite" aria-atomic="true" aria-label="Letter and picture">
+      <div class="letter" id="letter">A</div>
+      <div class="picture-wrap">
+        <span class="emoji" id="emoji" role="img" aria-label="Apple">🍎</span>
+        <img class="picture" id="picture" alt="" hidden>
+      </div>
+    </section>
+    <p class="word" id="word">Apple</p>
+    <p class="spelling" id="spelling">A is for Apple</p>
+
+    <p class="hint">Use A–Z or choose a letter below. Press Ctrl+Shift+Enter (⌘+Shift+Enter on Mac) for fullscreen.</p>
+    <div class="alphabet" id="alphabet" role="group" aria-label="Choose a letter"></div>
+
+    <label class="folder-picker">
+      <input id="folder" type="file" accept="image/*" webkitdirectory multiple>
+      Choose a picture folder
+    </label>
+    <p class="folder-note">Optional: add images named A.png, apple.jpg, B.png, ball.jpg, and so on.</p>
+    <p class="folder-status" id="folder-status" role="status"></p>
+  </main>
+
+  <script>
+    const alphabet = [
+      ["Apple", "🍎"], ["Ball", "⚽"], ["Cat", "🐱"], ["Dog", "🐶"],
+      ["Elephant", "🐘"], ["Fish", "🐠"], ["Giraffe", "🦒"], ["House", "🏠"],
+      ["Ice cream", "🍦"], ["Juice", "🧃"], ["Kite", "🪁"], ["Lion", "🦁"],
+      ["Moon", "🌙"], ["Nest", "🪺"], ["Owl", "🦉"], ["Pizza", "🍕"],
+      ["Queen", "👑"], ["Rainbow", "🌈"], ["Sun", "☀️"], ["Tree", "🌳"],
+      ["Umbrella", "☂️"], ["Violin", "🎻"], ["Whale", "🐳"], ["Xylophone", "🎼"],
+      ["Yoyo", "🪀"], ["Zebra", "🦓"]
+    ];
+
+    const letterElement = document.querySelector("#letter");
+    const wordElement = document.querySelector("#word");
+    const spellingElement = document.querySelector("#spelling");
+    const emojiElement = document.querySelector("#emoji");
+    const pictureElement = document.querySelector("#picture");
+    const alphabetElement = document.querySelector("#alphabet");
+    const folderElement = document.querySelector("#folder");
+    const folderStatus = document.querySelector("#folder-status");
+    const fullscreenStatus = document.querySelector("#fullscreen-status");
+    const imageFiles = new Map();
+    let activeObjectUrl = "";
+    let letterAnimation;
+    let selectedIndex = 0;
+
+    function showLetter(index) {
+      selectedIndex = index;
+      const letter = String.fromCharCode(65 + index);
+      const [word, emoji] = alphabet[index];
+
+      letterElement.textContent = letter;
+      if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        letterAnimation?.cancel();
+        letterAnimation = letterElement.animate(
+          [
+            { opacity: 0.4, transform: "scale(0.82)" },
+            { opacity: 1, transform: "scale(1)" }
+          ],
+          { duration: 1200, easing: "ease-out" }
+        );
+      }
+      wordElement.textContent = word;
+      spellingElement.textContent = `${letter} is for ${word}`;
+      emojiElement.textContent = emoji;
+      emojiElement.setAttribute("aria-label", word);
+      pictureElement.alt = `${letter} for ${word}`;
+
+      if (activeObjectUrl) {
+        URL.revokeObjectURL(activeObjectUrl);
+        activeObjectUrl = "";
+      }
+
+      const image = imageFiles.get(letter.toLowerCase());
+      if (image) {
+        activeObjectUrl = URL.createObjectURL(image);
+        pictureElement.src = activeObjectUrl;
+        pictureElement.hidden = false;
+        emojiElement.hidden = true;
+      } else {
+        pictureElement.removeAttribute("src");
+        pictureElement.hidden = true;
+        emojiElement.hidden = false;
+      }
+
+      for (const [buttonIndex, button] of [...alphabetElement.children].entries()) {
+        button.setAttribute("aria-pressed", String(buttonIndex === index));
+      }
+    }
+
+    alphabet.forEach(([,], index) => {
+      const button = document.createElement("button");
+      button.className = "letter-button";
+      button.type = "button";
+      button.textContent = String.fromCharCode(65 + index);
+      button.setAttribute("aria-label", `Show ${String.fromCharCode(65 + index)}`);
+      button.setAttribute("aria-pressed", "false");
+      button.addEventListener("click", () => showLetter(index));
+      alphabetElement.append(button);
+    });
+
+    async function toggleFullscreen() {
+      fullscreenStatus.textContent = "";
+      try {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        } else {
+          await document.documentElement.requestFullscreen();
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        fullscreenStatus.textContent = `Could not change fullscreen: ${message}`;
+      }
+    }
+
+    document.addEventListener("keydown", (event) => {
+      const fullscreenShortcut = event.key === "Enter"
+        && event.shiftKey
+        && !event.altKey
+        && (event.ctrlKey !== event.metaKey);
+      if (fullscreenShortcut) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        void toggleFullscreen();
+        return;
+      }
+
+      if (event.key === "Escape") return;
+      const key = event.key.toUpperCase();
+      if (/^[A-Z]$/.test(key) && !event.altKey && !event.ctrlKey && !event.metaKey) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        showLetter(key.charCodeAt(0) - 65);
+        return;
+      }
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    });
+
+    folderElement.addEventListener("change", () => {
+      imageFiles.clear();
+      for (const file of folderElement.files) {
+        if (!file.type.startsWith("image/")) continue;
+        const baseName = file.name.replace(/\.[^.]+$/, "").toLowerCase();
+        const match = alphabet.findIndex(([word], index) =>
+          baseName === String.fromCharCode(97 + index) || baseName === word.toLowerCase()
+        );
+        if (match !== -1) imageFiles.set(String.fromCharCode(97 + match), file);
+      }
+
+      folderStatus.textContent = imageFiles.size
+        ? `Found ${imageFiles.size} matching picture${imageFiles.size === 1 ? "" : "s"}.`
+        : "No matching pictures found. Use filenames like A.png or apple.jpg.";
+      showLetter(selectedIndex);
+    });
+
+    showLetter(0);
+  </script>
+</body>
+</html>
