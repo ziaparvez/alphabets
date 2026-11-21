@@ -123,6 +123,60 @@
     .fullscreen-status { margin: 8px 0 0; color: #a33b45; font-size: .82rem; }
     .fullscreen-status:empty { display: none; }
 
+    .editor {
+      width: min(calc(100% - 32px), 420px);
+      padding: 28px;
+      border: 1px solid #e8eaf5;
+      border-radius: 20px;
+      color: #25264b;
+      box-shadow: 0 24px 70px rgb(52 61 113 / 20%);
+    }
+
+    .editor::backdrop { background: rgb(37 38 75 / 45%); }
+    .editor h2 { margin: 0 0 18px; }
+    .editor label { display: block; margin: 14px 0 6px; font-weight: 800; }
+    .editor input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #dedff1;
+      border-radius: 10px;
+      font: inherit;
+    }
+    .editor-status { color: #a33b45; font-size: .85rem; }
+    .editor-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .editor-actions button {
+      padding: 10px 16px;
+      border: 1px solid #dedff1;
+      border-radius: 10px;
+      background: white;
+      color: #4f5276;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .editor-actions button[type="submit"] { border-color: #625ee8; background: #625ee8; color: white; }
+
+    .settings { width: min(calc(100% - 32px), 560px); }
+    .settings-letters {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      max-height: min(45vh, 360px);
+      margin: 0;
+      padding: 12px;
+      overflow-y: auto;
+      border: 1px solid #dedff1;
+      border-radius: 12px;
+    }
+    .settings-letters label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 0;
+      font-weight: 700;
+    }
+    .editor .settings-letters input { width: auto; margin: 0; padding: 0; accent-color: #625ee8; }
+
     .key {
       display: inline-grid;
       width: 34px;
@@ -194,6 +248,20 @@
       outline-offset: 3px;
     }
 
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      clip-path: inset(50%);
+      border: 0;
+    }
+
+    #app-title { user-select: none; -webkit-user-select: none; }
+
     .folder-picker input {
       position: absolute;
       width: 1px;
@@ -218,6 +286,7 @@
       .picture-wrap { min-height: 170px; }
       .picture { height: 165px; }
       .alphabet { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+      .settings-letters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -228,7 +297,8 @@
 <body>
   <main class="app">
     <p class="eyebrow">Learn your ABCs</p>
-    <h1>Alphabet Adventure</h1>
+    <h1 id="app-title" aria-describedby="mobile-action-hint">Alphabet Adventure</h1>
+    <p class="visually-hidden" id="mobile-action-hint">On touchscreens, touch and hold the title to open editing and letter settings.</p>
     <p class="intro">Press a letter on your keyboard and let’s explore!</p>
     <p class="fullscreen-status" id="fullscreen-status" role="status"></p>
 
@@ -253,15 +323,55 @@
     <p class="folder-status" id="folder-status" role="status"></p>
   </main>
 
+  <dialog class="editor" id="editor" aria-labelledby="editor-title">
+    <form id="editor-form">
+      <h2 id="editor-title">Edit letter</h2>
+      <label for="word-input">Word</label>
+      <input id="word-input" name="word" required maxlength="40">
+      <label for="emoji-input">Emoji</label>
+      <input id="emoji-input" name="emoji" required maxlength="16">
+      <p class="editor-status" id="editor-status" role="alert"></p>
+      <div class="editor-actions">
+        <button type="button" id="editor-cancel">Cancel</button>
+        <button type="submit">Save changes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="editor" id="touch-actions" aria-labelledby="touch-actions-title">
+    <h2 id="touch-actions-title">Quick actions</h2>
+    <p>Choose an action for the current letter.</p>
+    <div class="editor-actions">
+      <button type="button" id="touch-edit">Edit this letter</button>
+      <button type="button" id="touch-settings">Choose letters</button>
+      <button type="button" id="touch-actions-close">Close</button>
+    </div>
+  </dialog>
+
+  <dialog class="editor settings" id="settings" aria-labelledby="settings-title">
+    <form id="settings-form">
+      <h2 id="settings-title">Choose visible letters</h2>
+      <p>Checked letters stay in the alphabet. Keep at least one selected.</p>
+      <fieldset class="settings-letters" id="settings-letters">
+        <legend>Letters to include</legend>
+      </fieldset>
+      <p class="editor-status" id="settings-status" role="alert"></p>
+      <div class="editor-actions">
+        <button type="button" id="settings-cancel">Cancel</button>
+        <button type="submit">Save settings</button>
+      </div>
+    </form>
+  </dialog>
+
   <script>
     const alphabet = [
-      ["Apple", "🍎"], ["Ball", "⚽"], ["Cat", "🐱"], ["Dog", "🐶"],
-      ["Elephant", "🐘"], ["Fish", "🐠"], ["Giraffe", "🦒"], ["House", "🏠"],
-      ["Ice cream", "🍦"], ["Juice", "🧃"], ["Kite", "🪁"], ["Lion", "🦁"],
-      ["Moon", "🌙"], ["Nest", "🪺"], ["Owl", "🦉"], ["Pizza", "🍕"],
-      ["Queen", "👑"], ["Rainbow", "🌈"], ["Sun", "☀️"], ["Tree", "🌳"],
-      ["Umbrella", "☂️"], ["Violin", "🎻"], ["Whale", "🐳"], ["Xylophone", "🎼"],
-      ["Yoyo", "🪀"], ["Zebra", "🦓"]
+      ["Apple", "🍎"], ["Ball", "⚽🏀"], ["Cake", "🎂🧁"], ["Duck", "🦆🪿"],
+      ["Elephant", "🐘🦅"], ["Fish", "🐠"], ["Giraffe", "🦒"], ["House", "🏠"],
+      ["Ice cream", "🍦🍨"], ["Jacket", "🧥🪼"], ["Kangaroo", "🦘"], ["Lion", "🦁"],
+      ["Moon", "🌙"], ["Nest", "🪺"], ["Owl", "🦉"], ["Parrot", "🦜"],
+      ["Queen", "👸🏻"], ["Rabbit", "🐇"], ["Sun", "☀️"], ["Tree", "🌳"],
+      ["Umbrella", "☂️"], ["Violin", "🎻"], ["Whale", "🐳"], ["Xylophone", "🎹"],
+      ["Yak", "🦬🐃"], ["Zebra", "🦓"]
     ];
 
     const letterElement = document.querySelector("#letter");
@@ -273,12 +383,70 @@
     const folderElement = document.querySelector("#folder");
     const folderStatus = document.querySelector("#folder-status");
     const fullscreenStatus = document.querySelector("#fullscreen-status");
+    const editorDialog = document.querySelector("#editor");
+    const editorForm = document.querySelector("#editor-form");
+    const editorTitle = document.querySelector("#editor-title");
+    const wordInput = document.querySelector("#word-input");
+    const emojiInput = document.querySelector("#emoji-input");
+    const editorStatus = document.querySelector("#editor-status");
+    const appTitle = document.querySelector("#app-title");
+    const touchActionsDialog = document.querySelector("#touch-actions");
+    const settingsDialog = document.querySelector("#settings");
+    const settingsForm = document.querySelector("#settings-form");
+    const settingsLetters = document.querySelector("#settings-letters");
+    const settingsStatus = document.querySelector("#settings-status");
     const imageFiles = new Map();
+    const alphabetStorageKey = "alphabet-adventure-entries-v1";
+    const visibilityStorageKey = "alphabet-adventure-visible-letters-v1";
     let activeObjectUrl = "";
     let letterAnimation;
     let selectedIndex = 0;
+    let alphabetStorageError = "";
+    let settingsStorageError = "";
+    let touchHoldTimer = 0;
+    let visibleLetters = new Set(alphabet.map((_, index) => index));
+
+    try {
+      const savedAlphabet = localStorage.getItem(alphabetStorageKey);
+      if (savedAlphabet !== null) {
+        const savedEntries = JSON.parse(savedAlphabet);
+        if (!Array.isArray(savedEntries)
+          || savedEntries.length !== alphabet.length
+          || savedEntries.some((entry) => !Array.isArray(entry)
+            || typeof entry[0] !== "string"
+            || !entry[0].trim()
+            || typeof entry[1] !== "string"
+            || !entry[1].trim())) {
+          throw new Error("Saved alphabet data has an invalid format.");
+        }
+        savedEntries.forEach(([word, emoji], index) => {
+          alphabet[index] = [word, emoji];
+        });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      alphabetStorageError = `Could not load saved alphabet edits: ${message}`;
+    }
+
+    try {
+      const savedVisibility = localStorage.getItem(visibilityStorageKey);
+      if (savedVisibility !== null) {
+        const visibility = JSON.parse(savedVisibility);
+        if (!Array.isArray(visibility)
+          || visibility.length !== alphabet.length
+          || visibility.some((isVisible) => typeof isVisible !== "boolean")
+          || !visibility.some(Boolean)) {
+          throw new Error("Saved letter settings have an invalid format.");
+        }
+        visibleLetters = new Set(visibility.flatMap((isVisible, index) => isVisible ? [index] : []));
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      settingsStorageError = `Could not load saved letter settings: ${message}`;
+    }
 
     function showLetter(index) {
+      if (!visibleLetters.has(index)) return;
       selectedIndex = index;
       const letter = String.fromCharCode(65 + index);
       const [word, emoji] = alphabet[index];
@@ -329,8 +497,20 @@
       button.textContent = String.fromCharCode(65 + index);
       button.setAttribute("aria-label", `Show ${String.fromCharCode(65 + index)}`);
       button.setAttribute("aria-pressed", "false");
+      button.hidden = !visibleLetters.has(index);
       button.addEventListener("click", () => showLetter(index));
       alphabetElement.append(button);
+
+      const label = document.createElement("label");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.name = "visible-letter";
+      checkbox.value = String(index);
+      checkbox.checked = visibleLetters.has(index);
+      checkbox.id = `visible-letter-${index}`;
+      label.htmlFor = checkbox.id;
+      label.append(checkbox, document.createTextNode(String.fromCharCode(65 + index)));
+      settingsLetters.append(label);
     });
 
     async function toggleFullscreen() {
@@ -347,7 +527,128 @@
       }
     }
 
+    function openEditor() {
+      const letter = String.fromCharCode(65 + selectedIndex);
+      editorTitle.textContent = `Edit ${letter}`;
+      wordInput.value = alphabet[selectedIndex][0];
+      emojiInput.value = alphabet[selectedIndex][1];
+      editorStatus.textContent = alphabetStorageError;
+      editorDialog.showModal();
+      wordInput.focus();
+      wordInput.select();
+    }
+
+    editorForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const word = wordInput.value.trim();
+      const emoji = emojiInput.value.trim();
+      if (!word || !emoji) {
+        editorStatus.textContent = "Enter both a word and an emoji.";
+        return;
+      }
+
+      const updatedAlphabet = alphabet.map(([entryWord, entryEmoji]) => [entryWord, entryEmoji]);
+      updatedAlphabet[selectedIndex] = [word, emoji];
+      try {
+        localStorage.setItem(alphabetStorageKey, JSON.stringify(updatedAlphabet));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        editorStatus.textContent = `Could not save your edits: ${message}`;
+        return;
+      }
+
+      alphabet[selectedIndex] = [word, emoji];
+      alphabetStorageError = "";
+      showLetter(selectedIndex);
+      editorDialog.close();
+    });
+
+    document.querySelector("#editor-cancel").addEventListener("click", () => editorDialog.close());
+
+    appTitle.addEventListener("pointerdown", (event) => {
+      if (event.pointerType !== "touch") return;
+      window.clearTimeout(touchHoldTimer);
+      touchHoldTimer = window.setTimeout(() => touchActionsDialog.showModal(), 750);
+    });
+
+    const cancelTouchHold = () => window.clearTimeout(touchHoldTimer);
+    appTitle.addEventListener("pointerup", cancelTouchHold);
+    appTitle.addEventListener("pointercancel", cancelTouchHold);
+    appTitle.addEventListener("pointerleave", cancelTouchHold);
+    appTitle.addEventListener("contextmenu", (event) => event.preventDefault());
+
+    document.querySelector("#touch-edit").addEventListener("click", () => {
+      touchActionsDialog.close();
+      openEditor();
+    });
+    document.querySelector("#touch-settings").addEventListener("click", () => {
+      touchActionsDialog.close();
+      openSettings();
+    });
+    document.querySelector("#touch-actions-close").addEventListener("click", () => touchActionsDialog.close());
+
+    function openSettings() {
+      for (const checkbox of settingsForm.querySelectorAll('input[name="visible-letter"]')) {
+        checkbox.checked = visibleLetters.has(Number(checkbox.value));
+      }
+      settingsStatus.textContent = settingsStorageError;
+      settingsDialog.showModal();
+    }
+
+    settingsForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const selectedLetters = [...settingsForm.querySelectorAll('input[name="visible-letter"]:checked')]
+        .map((checkbox) => Number(checkbox.value));
+      if (!selectedLetters.length) {
+        settingsStatus.textContent = "Keep at least one letter selected.";
+        return;
+      }
+
+      const visibility = alphabet.map((_, index) => selectedLetters.includes(index));
+      try {
+        localStorage.setItem(visibilityStorageKey, JSON.stringify(visibility));
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        settingsStatus.textContent = `Could not save your settings: ${message}`;
+        return;
+      }
+
+      visibleLetters = new Set(selectedLetters);
+      settingsStorageError = "";
+      for (const [index, button] of [...alphabetElement.children].entries()) {
+        button.hidden = !visibleLetters.has(index);
+      }
+      if (!visibleLetters.has(selectedIndex)) showLetter(selectedLetters[0]);
+      settingsDialog.close();
+    });
+
+    document.querySelector("#settings-cancel").addEventListener("click", () => settingsDialog.close());
+
     document.addEventListener("keydown", (event) => {
+      if (editorDialog.open || settingsDialog.open || touchActionsDialog.open) return;
+
+      const editShortcut = event.key.toLowerCase() === "e"
+        && event.shiftKey
+        && !event.altKey
+        && (event.ctrlKey !== event.metaKey);
+      if (editShortcut) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        openEditor();
+        return;
+      }
+
+      const settingsShortcut = event.key.toLowerCase() === "s"
+        && event.shiftKey
+        && !event.altKey
+        && (event.ctrlKey !== event.metaKey);
+      if (settingsShortcut) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        openSettings();
+        return;
+      }
+
       const fullscreenShortcut = event.key === "Enter"
         && event.shiftKey
         && !event.altKey
@@ -360,11 +661,16 @@
       }
 
       if (event.key === "Escape") return;
+      if (event.target instanceof HTMLInputElement
+        || event.target instanceof HTMLTextAreaElement
+        || event.target instanceof HTMLSelectElement
+        || (event.target instanceof HTMLElement && event.target.isContentEditable)) return;
       const key = event.key.toUpperCase();
       if (/^[A-Z]$/.test(key) && !event.altKey && !event.ctrlKey && !event.metaKey) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        showLetter(key.charCodeAt(0) - 65);
+        const index = key.charCodeAt(0) - 65;
+        if (visibleLetters.has(index)) showLetter(index);
         return;
       }
 
@@ -389,7 +695,8 @@
       showLetter(selectedIndex);
     });
 
-    showLetter(0);
+    const availableLetters = [...visibleLetters];
+    showLetter(availableLetters[Math.floor(Math.random() * availableLetters.length)]);
   </script>
 </body>
 </html>

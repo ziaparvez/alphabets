@@ -12,6 +12,14 @@ required.
 ## Use the page
 
 - Press **A–Z** on the keyboard or click a letter to display it.
+- The page starts with a random letter each time it is loaded.
+- Press **Ctrl+Shift+E** (or **⌘+Shift+E** on Mac) to edit the displayed
+  letter's word and emoji. On a touchscreen, touch and hold the page title to
+  open the quick-actions menu. Edits are saved in this browser.
+- Press **Ctrl+Shift+S** (or **⌘+Shift+S** on Mac) to choose which letters
+  appear. The touchscreen quick-actions menu also opens these settings. Hidden
+  letters are excluded from keyboard selection and the random starting letter.
+  Settings are saved in this browser.
 - Press **Ctrl+Shift+Enter** (or **⌘+Shift+Enter** on Mac) to toggle fullscreen.
 - Other ordinary keys are ignored. Browsers may reserve some shortcuts, and
   **Escape** exits fullscreen.
